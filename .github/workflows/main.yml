@@ -1,3 +1,5 @@
+name: CI Pipeline
+
 on:
   push:
     tags:
@@ -5,8 +7,10 @@ on:
 
 name: AWS ECR push
 jobs:
-  push-to-ecr:
+  build-push-to-ecr:
     runs-on: ubuntu-latest
+    env:
+      PYTHON_V: "3.9"
 
     steps:
     - name: Checkout
@@ -15,7 +19,27 @@ jobs:
     - name: Set output
       id: vars
       run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-
+      
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ env.PYTHON_V }}
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        
+    - name: Run tests and generage coverage report
+      run: |
+          pip install pytest pytest-cov
+          # create and set the r/w perms for DD agent
+          sudo touch /var/log/pyportal_logs.json
+          sudo chmod 777 /var/log/pyportal_logs.json
+          export PYTHONPATH=${PYTHONPATH}:.
+          # temporary ignore to finish the pipeline before fixing the tests
+          pytest --cov=./ --cov-report=xml -vv
+        
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
