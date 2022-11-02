@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - v*.*.*
-
-name: AWS ECR push
 jobs:
   build-push-to-ecr:
     runs-on: ubuntu-latest
