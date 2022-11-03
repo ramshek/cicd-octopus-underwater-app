@@ -10,8 +10,16 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.9"]
+        
 
     steps:
+    
+    - name: Install Octopus Cli
+      uses: OctopusDeploy/install-octopus-cli-action@v1.1.1
+      with:
+        version: latest
+    
+    
     - name: Checkout
       uses: actions/checkout@v2
       
@@ -74,11 +82,11 @@ jobs:
         IMAGE_TAG: ${{ steps.vars.outputs.tag }}
       run: |
         # Build a docker container and push it to ECR 
-        echo ${{ env.ECR_REGISTRY }} 
-        echo ${{ env.ECR_REPOSITORY }}
-        echo ${{ env.IMAGE_TAG }}
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker image ls
         echo "Pushing image to ECR..."
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+        
+    - name: Create Octopus Release
+      run: octo create-release --project underwater-octo-github --version 0.0.i --server=${{ secrets.OCTOPUS_SERVER }} --apiKey=${{ secrets.OCTOPUS_APIKEY }}
+
