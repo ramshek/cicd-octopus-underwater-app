@@ -94,7 +94,7 @@ jobs:
         
         
     - name: Replace image in config
-      uses: ./.github/actions/replace
+      uses: datamonsters/replace-action@v2
       with:
         files: sampleDeployment.yml
         replacements: '$IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:${{ env.RELEASE_VERSION }}'
