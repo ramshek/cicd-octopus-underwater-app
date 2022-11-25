@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - v*.*.*
+  workflow_dispatch:
 jobs:
   build-push-to-ecr:
     runs-on: ubuntu-latest
@@ -14,14 +15,18 @@ jobs:
 
     steps:
     
-    - name: Install Octopus Cli
-      uses: OctopusDeploy/install-octopus-cli-action@v1.1.1
-      with:
-        version: latest
-    
-    
     - name: Checkout
       uses: actions/checkout@v2
+
+    - name: Set env
+      run: |
+          {
+            echo "RELEASE_VERSION=${GITHUB_REF#refs/*/v}"
+            echo "RELEASE_FNAME=underwater.${GITHUB_REF#refs/*/v}.zip"
+            echo "OCTOPUS_PROJ=underwater-octo-github"
+            echo "OCTOPUS_TARGET=Development"
+            echo "OCTOPUS_PACKAGE_SUFFIX="
+          } >> $GITHUB_ENV
       
     - name: Set output
       id: vars
@@ -82,14 +87,33 @@ jobs:
         IMAGE_TAG: ${{ steps.vars.outputs.tag }}
       run: |
         # Build a docker container and push it to ECR 
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.RELEASE_VERSION } .
         echo "Pushing image to ECR..."
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.RELEASE_VERSION }
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:${{ env.RELEASE_VERSION }"
         
-    - name: Create Octopus Release
-      run: octo create-release --project underwater-octo-github --version 0.0.i --server=${{ secrets.OCTOPUS_SERVER }} --apiKey=${{ secrets.OCTOPUS_APIKEY }}
+    - name: Install Octopus Cli
+      uses: OctopusDeploy/install-octopus-cli-action@v1.1.6
+      with:
+        version: latest
+        
+    - name: Push Package to Octopus Deploy
+      uses: OctopusDeploy/push-package-action@v1.0.2
+      with:
+        server: ${{ secrets.OCTOPUS_SERVER }}
+        api_key: ${{ secrets.OCTOPUS_APIKEY }}
+        debug: true
+        ignore_ssl_errors: false
+        log_level: debug
+        overwrite_mode: FailIfExists
+        packages: ${{ env.RELEASE_FNAME }}
 
-    - name: deploy Octopus release
-      run: octo deploy-release --project underwater-octo-github --version=latest --deployto Development --server=${{ secrets.OCTOPUS_SERVER }} --apiKey=${{ secrets.OCTOPUS_APIKEY }}    
-
+    - name: Create Release in Octopus Deploy
+      uses: OctopusDeploy/create-release-action@v1.0.4
+      with:
+        server: ${{ secrets.OCTOPUS_SERVER }}
+        api_key: ${{ secrets.OCTOPUS_APIKEY }}
+        debug: true
+        project: ${{ env.OCTOPUS_PROJ }}
+        deploy_to: ${{ env.OCTOPUS_TARGET }}
+        package: skynet${{ env.OCTOPUS_PACKAGE_SUFFIX }}:${{ env.RELEASE_VERSION }
