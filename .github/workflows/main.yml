@@ -92,6 +92,13 @@ jobs:
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.RELEASE_VERSION }}
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:${{ env.RELEASE_VERSION }}"
         
+        
+    - name: Replace image in config
+      uses: ./.github/actions/replace
+      with:
+        files: sampleDeployment.yml
+        replacements: '$IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:${{ env.RELEASE_VERSION }}'
+        
     - name: Prepare Upload Package
       run: |
           echo "Packaging for Octopus ..."
