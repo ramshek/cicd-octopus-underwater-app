@@ -1,0 +1,33 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-service 
+  namespace: default
+  labels:
+    app: hello-service 
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-service 
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2        # how many pods we can add at a time
+      maxUnavailable: 25%  # maxUnavailable define how many pods can be unavailable during the rolling update
+  template:
+    metadata:
+      labels:
+        app: hello-service 
+        version: v1
+    spec:
+      containers:
+      - name: hello-service 
+        image: $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.RELEASE_VERSION }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+      imagePullSecrets:
+      - name: ocirsecret
