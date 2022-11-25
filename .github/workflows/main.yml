@@ -92,7 +92,7 @@ jobs:
         docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }} .
         echo "Pushing image to ECR..."
         docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }}
-        echo "::set-output name=image::${{ env.ECR_REGISTRY }}/${ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }}"
+        echo "::set-output name=image::${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }}"
         
         
     - name: Replace image in config
