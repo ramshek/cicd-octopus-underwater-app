@@ -123,4 +123,4 @@ jobs:
         debug: true
         project: ${{ env.OCTOPUS_PROJ }}
         deploy_to: ${{ env.OCTOPUS_TARGET }}
-        package: underwater-${{ env.OCTOPUS_PACKAGE_SUFFIX }}:${{ env.RELEASE_VERSION }
+        package: underwater-${{ env.OCTOPUS_PACKAGE_SUFFIX }}:${{ env.RELEASE_VERSION }}
