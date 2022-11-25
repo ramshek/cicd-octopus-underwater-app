@@ -133,3 +133,9 @@ jobs:
         project: ${{ env.OCTOPUS_PROJ }}
         deploy_to: ${{ env.OCTOPUS_TARGET }}
         package: underwater-${{ env.OCTOPUS_PACKAGE_SUFFIX }}:${{ env.RELEASE_VERSION }}
+        
+    - name: Commit files
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git commit -am "Bump docker tag"
