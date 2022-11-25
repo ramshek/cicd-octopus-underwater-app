@@ -77,27 +77,29 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
-
+    - name: Set env for DOCKER
+      run: |
+        {
+        echo "ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}"
+        echo "ECR_REPOSITORY=${{ secrets.REPO_NAME }}"
+        echo "IMAGE_TAG=${{ steps.vars.outputs.tag }}"
+         } >> $GITHUB_ENV
 
     - name: Build, tag, and push the image to Amazon ECR
-      id: build-image
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
-        IMAGE_TAG: ${{ steps.vars.outputs.tag }}
+      id: build-image 
       run: |
         # Build a docker container and push it to ECR 
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.RELEASE_VERSION }} .
+        docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }} .
         echo "Pushing image to ECR..."
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.RELEASE_VERSION }}
-        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:${{ env.RELEASE_VERSION }}"
+        docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }}
+        echo "::set-output name=image::${{ env.ECR_REGISTRY }}/${ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }}"
         
         
     - name: Replace image in config
       uses: datamonsters/replace-action@v2
       with:
         files: sampleDeployment.yml
-        replacements: '$IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:${{ env.RELEASE_VERSION }}'
+        replacements: '$IMAGE=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }}'
         
     - name: Prepare Upload Package
       run: |
