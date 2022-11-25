@@ -87,10 +87,17 @@ jobs:
         IMAGE_TAG: ${{ steps.vars.outputs.tag }}
       run: |
         # Build a docker container and push it to ECR 
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.RELEASE_VERSION } .
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.RELEASE_VERSION }} .
         echo "Pushing image to ECR..."
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.RELEASE_VERSION }
-        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:${{ env.RELEASE_VERSION }"
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.RELEASE_VERSION }}
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:${{ env.RELEASE_VERSION }}"
+        
+    - name: Prepare Upload Package
+      run: |
+          echo "Packaging for Octopus ..."
+          echo "Zipping files and folders to ${{ env.RELEASE_FNAME }}"
+          zip -r ${{ env.RELEASE_FNAME }} . -i '*'
+          echo "Succesfully zipped ${{ env.RELEASE_FNAME }}"  
         
     - name: Install Octopus Cli
       uses: OctopusDeploy/install-octopus-cli-action@v1.1.6
@@ -116,4 +123,4 @@ jobs:
         debug: true
         project: ${{ env.OCTOPUS_PROJ }}
         deploy_to: ${{ env.OCTOPUS_TARGET }}
-        package: skynet${{ env.OCTOPUS_PACKAGE_SUFFIX }}:${{ env.RELEASE_VERSION }
+        package: underwater-${{ env.OCTOPUS_PACKAGE_SUFFIX }}:${{ env.RELEASE_VERSION }
