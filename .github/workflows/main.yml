@@ -26,7 +26,6 @@ jobs:
       run: |
           {
             echo "RELEASE_VERSION=${GITHUB_REF#refs/*/prod-v}"
-            echo "GIT_TAG=${GITHUB_REF#refs/*/}"
             echo "RELEASE_FNAME=underwater.${GITHUB_REF#refs/*/prod-v}.zip"
             echo "OCTOPUS_PROJ=underwater-octo-github"
             echo "OCTOPUS_TARGET=Development"
@@ -150,16 +149,12 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git tag -d $GIT_TAG
-        git tag $GIT_TAG
         git commit -am "Bump docker tag"
 
 
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        force: true
-        tags: true
+        branch: ${{ github.head_ref }}
         
         
