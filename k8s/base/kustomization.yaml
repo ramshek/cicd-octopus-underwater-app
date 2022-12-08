@@ -3,7 +3,7 @@ kind: Kustomization
 images:
 - name: 624376450453.dkr.ecr.us-east-1.amazonaws.com/underwaterapp
   newName: 624376450453.dkr.ecr.us-east-1.amazonaws.com/underwaterapp
-  newTag: 1.0.7
+  newTag: 1.0.9
 
 resources:
 - defi-automation-api.yaml
