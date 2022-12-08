@@ -1,0 +1,15 @@
+# http://yaml-multiline.info/
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: defi-prod
+
+resources:
+  - ../../base
+
+configMapGenerator:
+  - name: defi-automation-api-cfg
+    behavior: replace
+    literals:
+      - defiDbHost="youhexprod.8vy5x.mongodb.net"
+      - defiDbName="defi_prod"
