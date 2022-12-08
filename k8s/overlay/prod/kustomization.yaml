@@ -5,11 +5,15 @@ kind: Kustomization
 namespace: defi-prod
 
 resources:
-  - ../../base
+- ../../base
 
 configMapGenerator:
-  - name: defi-automation-api-cfg
-    behavior: replace
-    literals:
-      - defiDbHost="youhexprod.8vy5x.mongodb.net"
-      - defiDbName="defi_prod"
+- behavior: replace
+  literals:
+  - defiDbHost="youhexprod.8vy5x.mongodb.net"
+  - defiDbName="defi_prod"
+  name: defi-automation-api-cfg
+images:
+- name: 379452281316.dkr.ecr.eu-west-1.amazonaws.com/revenyou-defi-automation
+  newName: 624376450453.dkr.ecr.us-east-1.amazonaws.com/underwaterapp
+  newTag: 1.0.2
