@@ -146,6 +146,8 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
+        git tag -d $GITHUB_REF_NAME
+        git tag $GITHUB_REF_NAME
         git commit -am "Bump docker tag"
 
 
@@ -153,5 +155,7 @@ jobs:
       uses: ad-m/github-push-action@master
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
+        force: true
+        tags: true
         
         
