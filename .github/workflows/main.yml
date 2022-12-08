@@ -110,26 +110,37 @@ jobs:
       with:
         version: latest
         
-    - name: Push Package to Octopus Deploy
-      uses: OctopusDeploy/push-package-action@v1.0.2
-      with:
-        server: ${{ secrets.OCTOPUS_SERVER }}
-        api_key: ${{ secrets.OCTOPUS_APIKEY }}
-        debug: true
-        ignore_ssl_errors: false
-        log_level: debug
-        overwrite_mode: FailIfExists
-        packages: ${{ env.RELEASE_FNAME }}
+ #   - name: Push Package to Octopus Deploy
+ #     uses: OctopusDeploy/push-package-action@v1.0.2
+ #     with:
+ #       server: ${{ secrets.OCTOPUS_SERVER }}
+ #       api_key: ${{ secrets.OCTOPUS_APIKEY }}
+ #       debug: true
+ #       ignore_ssl_errors: false
+ #       log_level: debug
+ #       overwrite_mode: FailIfExists
+ #       packages: ${{ env.RELEASE_FNAME }}
 
-    - name: Create Release in Octopus Deploy
-      uses: OctopusDeploy/create-release-action@v1.0.4
+#  - name: Create Release in Octopus Deploy
+#      uses: OctopusDeploy/create-release-action@v1.0.4
+#      with:
+#        server: ${{ secrets.OCTOPUS_SERVER }}
+#        api_key: ${{ secrets.OCTOPUS_APIKEY }}
+#        debug: true
+#        project: ${{ env.OCTOPUS_PROJ }}
+#        deploy_to: ${{ env.OCTOPUS_TARGET }}
+#        package: underwater-${{ env.OCTOPUS_PACKAGE_SUFFIX }}:${{ env.RELEASE_VERSION }}
+        
+    - name: Setup Kustomize
+      uses: imranismail/setup-kustomize@v1
       with:
-        server: ${{ secrets.OCTOPUS_SERVER }}
-        api_key: ${{ secrets.OCTOPUS_APIKEY }}
-        debug: true
-        project: ${{ env.OCTOPUS_PROJ }}
-        deploy_to: ${{ env.OCTOPUS_TARGET }}
-        package: underwater-${{ env.OCTOPUS_PACKAGE_SUFFIX }}:${{ env.RELEASE_VERSION }}
+        kustomize-version: "4.5.7"
+
+    - name: Update Kubernetes resources
+      run: |
+       cd k8s/overlay/prod
+       kustomize edit set image 379452281316.dkr.ecr.eu-west-1.amazonaws.com/revenyou-defi-automation=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }}
+       cat kustomization.yaml
         
     - name: Commit files
       run: |
@@ -142,3 +153,5 @@ jobs:
       uses: ad-m/github-push-action@master
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
+        
+        
