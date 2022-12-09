@@ -161,6 +161,9 @@ jobs:
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v4
       with:
+        add-paths: |
+            k8s/base/kustomization.yaml
+            k8s/overlay/prod/*.yaml
         base: main
 
 
