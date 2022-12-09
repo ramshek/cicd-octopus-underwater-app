@@ -144,17 +144,36 @@ jobs:
        cd k8s/base
        kustomize edit set image 624376450453.dkr.ecr.us-east-1.amazonaws.com/underwaterapp=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }}
        cat kustomization.yaml
-        
-    - name: Commit files
+       
+    - name: Create commits
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git commit -am "Bump docker tag"
+       git config user.name 'GitHub Action'
+       git config user.email 'action@github.com'
+       date +%s > report.txt
+       git commit -am "Modify tracked file during workflow"
+       date +%s > new-report.txt
+       git add -A
+       git commit -m "Add untracked file during workflow"
+       
+    - name: Uncommitted change
+      run: date +%s > report.txt
+    
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v4
 
 
-    - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-        branch: ${{ github.head_ref }}
+
+
+  #  - name: Commit files
+  #    run: |
+  #      git config --local user.email "action@github.com"
+  #      git config --local user.name "GitHub Action"
+  #      git commit -am "Bump docker tag"
+
+
+  # - name: Push changes
+  #  uses: ad-m/github-push-action@master
+  #    with:
+  #      branch: ${{ github.head_ref }}
         
         
