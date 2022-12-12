@@ -8,6 +8,8 @@ on:
 jobs:
   build-push-to-ecr:
     runs-on: ubuntu-latest
+    outputs:
+       image: ${{ steps.build-image.image }}
     strategy:
       matrix:
         python-version: ["3.9"]
@@ -94,8 +96,7 @@ jobs:
         echo "Pushing image to ECR..."
         docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }}
         echo "::set-output name=image::${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }}"
-    outputs:
-       image: ${{ steps.build-image.image }}
+
         
         
  #   - name: Replace image in config
