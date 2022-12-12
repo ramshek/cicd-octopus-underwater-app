@@ -176,11 +176,15 @@ jobs:
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git commit -a -m "Add changes"
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: develop
+          
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        
+  #    - name: Push changes
+  #      uses: ad-m/github-push-action@master
+  #      with:
+  #        github_token: ${{ secrets.GITHUB_TOKEN }}
+  #        branch: develop
 
   #  - name: Commit files
   #    run: |
