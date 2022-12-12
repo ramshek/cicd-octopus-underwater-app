@@ -159,7 +159,7 @@ jobs:
         with:
           ref: 'develop'
       - name: run echo
-        run: echo "${{ needs.build-push-to-ecr.outputs.image }}"
+        run: echo "${{ needs.build-push-to-ecr.outputs.tagName }}"
           
       - name: Setup Kustomize
         uses: imranismail/setup-kustomize@v1
