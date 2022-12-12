@@ -1,1 +1,98 @@
 
+name: CI Pipeline
+
+on:
+  workflow_dispatch:  
+  
+jobs:
+  build-push-to-ecr:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.head_ref }}
+        fetch-depth: 0
+
+    - name: Set env
+      id: setenv
+      if: contains(github.ref, 'prod')
+      run: |
+          {
+            echo "RELEASE_VERSION=${GITHUB_REF#refs/*/prod-v}"
+            echo "RELEASE_FNAME=underwater.${GITHUB_REF#refs/*/prod-v}.zip"
+            echo "OCTOPUS_PROJ=underwater-octo-github"
+            echo "OCTOPUS_TARGET=Development"
+            echo "OCTOPUS_PACKAGE_SUFFIX="
+          } >> $GITHUB_ENV
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-SECRET-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Set env for DOCKER
+      run: |
+        {
+        echo "ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}"
+        echo "ECR_REPOSITORY=${{ secrets.REPO_NAME }}"
+         } >> $GITHUB_ENV
+     
+
+    - name: Build, tag, and push the image to Amazon ECR
+      id: build-image 
+      run: |
+        # Build a docker container and push it to ECR 
+        docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }} .
+        echo "Pushing image to ECR..."
+        docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }}
+        echo "::set-output name=image::${{ env.RELEASE_VERSION }}"
+  
+    - name: Setup Kustomize
+      uses: imranismail/setup-kustomize@v1
+      with:
+        kustomize-version: "4.5.7"
+
+    - name: Update Kubernetes resources
+      run: |
+       cd k8s/base
+       kustomize edit set image 624376450453.dkr.ecr.us-east-1.amazonaws.com/underwaterapp=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }}
+       cat kustomization.yaml
+       
+  update-repository:
+    needs: build-push-to-ecr
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: 'develop'
+      - name: run echo
+        run: echo ${{ needs.build-push-to-ecr.outputs.tagName }}
+          
+      - name: Setup Kustomize
+        uses: imranismail/setup-kustomize@v1
+        with:
+          kustomize-version: "4.5.7"
+      - name: Update Kubernetes resources
+        run: |
+          cd k8s/base
+          kustomize edit set image 624376450453.dkr.ecr.us-east-1.amazonaws.com/underwaterapp=624376450453.dkr.ecr.us-east-1.amazonaws.com/underwaterapp:${{ needs.build-push-to-ecr.outputs.tagName }}
+          cat kustomization.yaml
+      - name: Commit files
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -a -m "Add changes"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: develop
