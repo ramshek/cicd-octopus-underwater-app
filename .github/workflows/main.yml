@@ -93,6 +93,7 @@ jobs:
         docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }} .
         echo "Pushing image to ECR..."
         docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }}
+        echo "::set-output name=image::${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }}"
         
         
  #   - name: Replace image in config
@@ -160,7 +161,7 @@ jobs:
       - name: Update Kubernetes resources
         run: |
           cd k8s/base
-          kustomize edit set image 624376450453.dkr.ecr.us-east-1.amazonaws.com/underwaterapp=${{ needs.build-push-to-ecr.steps.login-ecr.outputs.registry }}/${{ secrets.REPO_NAME }}:${{ env.RELEASE_VERSION }}
+          kustomize edit set image 624376450453.dkr.ecr.us-east-1.amazonaws.com/underwaterapp="${{ needs.build-push-to-ecr.outputs.image }}"
           cat kustomization.yaml
       - name: Commit files
         run: |
