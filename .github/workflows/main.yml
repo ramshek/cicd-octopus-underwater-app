@@ -4,15 +4,16 @@ on:
   push:
     tags:
       - "*-v[1-9]+.[0-9]+.[0-9]+"
-  workflow_dispatch:
+  workflow_dispatch:  
+  
 jobs:
   build-push-to-ecr:
     runs-on: ubuntu-latest
-    outputs:
-       image: ${{ steps.build-image.image }}
     strategy:
       matrix:
         python-version: ["3.9"]
+    outputs:
+      tagName: ${{ steps.build-image.outouts.image }}
         
 
     steps:
@@ -95,7 +96,7 @@ jobs:
         docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }} .
         echo "Pushing image to ECR..."
         docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }}
-        echo "::set-output name=image::${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }}"
+        echo "::set-output name=image::${{ env.RELEASE_VERSION }}"
 
         
         
@@ -167,7 +168,7 @@ jobs:
       - name: Update Kubernetes resources
         run: |
           cd k8s/base
-          kustomize edit set image 624376450453.dkr.ecr.us-east-1.amazonaws.com/underwaterapp="${{ needs.build-push-to-ecr.outputs.image }}"
+          kustomize edit set image 624376450453.dkr.ecr.us-east-1.amazonaws.com/underwaterapp=624376450453.dkr.ecr.us-east-1.amazonaws.com/underwaterapp:${{ needs.build-push-to-ecr.outputs.tagName }}
           cat kustomization.yaml
       - name: Commit files
         run: |
