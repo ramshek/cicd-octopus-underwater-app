@@ -154,6 +154,9 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: 'develop'
+      - name: run echo
+        run: echo "${{ needs.build-push-to-ecr.outputs.image }}"
+          
       - name: Setup Kustomize
         uses: imranismail/setup-kustomize@v1
         with:
