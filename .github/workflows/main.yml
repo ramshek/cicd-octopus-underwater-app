@@ -145,6 +145,11 @@ jobs:
        kustomize edit set image 624376450453.dkr.ecr.us-east-1.amazonaws.com/underwaterapp=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }}
        cat kustomization.yaml
        
+    - name: Reset promotion branch
+      run: |
+        git fetch origin main:main
+        git reset --hard main
+       
     - name: Create commits
       run: |
        git config user.name 'GitHub Action'
