@@ -145,32 +145,6 @@ jobs:
        kustomize edit set image 624376450453.dkr.ecr.us-east-1.amazonaws.com/underwaterapp=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }}
        cat kustomization.yaml
        
-    - name: Reset promotion branch
-      run: |
-        git fetch origin main:main
-        git reset --hard main
-       
-    - name: Create commits
-      run: |
-       git config user.name 'GitHub Action'
-       git config user.email 'action@github.com'
-       date +%s > report.txt
-       git commit -am "Modify tracked file during workflow"
-       date +%s > new-report.txt
-       git add -A
-       git commit -m "Add untracked file during workflow"
-       
-    - name: Uncommitted change
-      run: date +%s > report.txt
-    
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v4
-      with:
-        add-paths: |
-            k8s/base/kustomization.yaml
-            k8s/overlay/prod/*.yaml
-        base: main
-
 
   #  - name: Commit files
   #    run: |
