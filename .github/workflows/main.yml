@@ -13,7 +13,7 @@ jobs:
       matrix:
         python-version: ["3.9"]
     outputs:
-      tagName: ${{ steps.build-image.outouts.image }}
+      tagName: ${{ steps.step1.outputs.test }}
         
 
     steps:
@@ -35,7 +35,8 @@ jobs:
             echo "OCTOPUS_TARGET=Development"
             echo "OCTOPUS_PACKAGE_SUFFIX="
           } >> $GITHUB_ENV
-          
+    - id: step1
+      run: echo "::set-output name=test::${GITHUB_REF#refs/*/prod-v}"
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
