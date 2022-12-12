@@ -144,6 +144,7 @@ jobs:
        kustomize edit set image 624376450453.dkr.ecr.us-east-1.amazonaws.com/underwaterapp=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_VERSION }}
        cat kustomization.yaml
   update-repository:
+    needs: build-push-to-ecr
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
