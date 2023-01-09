@@ -7,7 +7,7 @@ on:
     branches:
       - main
   push:
-    branches: [develop, master]
+    branches: [develop, main]
     
 # This is what will cancel the workflow
 concurrency:
